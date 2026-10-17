@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import TodoForm from "./components/TodoForm.jsx";
 import TodoFilters from "./components/TodoFilters.jsx";
 import TodoList from "./components/TodoList.jsx";
+import useLocalStorage from "./hooks/useLocalStorage.js";
+import { filterTodos } from "./utils/filterTodos.js";
 import "./App.css";
+
+const TODOS_STORAGE_KEY = "react-todo-list.todos";
+const FILTER_STORAGE_KEY = "react-todo-list.filter";
 
 const INITIAL_TODOS = [
   { id: "sample-1", text: "Set up a React project with Vite", completed: true },
@@ -10,19 +15,9 @@ const INITIAL_TODOS = [
   { id: "sample-3", text: "Build a to-do list", completed: false },
 ];
 
-function filterTodos(todos, filter) {
-  if (filter === "active") {
-    return todos.filter((todo) => !todo.completed);
-  }
-  if (filter === "completed") {
-    return todos.filter((todo) => todo.completed);
-  }
-  return todos;
-}
-
 export default function App() {
-  const [todos, setTodos] = useState(INITIAL_TODOS);
-  const [filter, setFilter] = useState("all");
+  const [todos, setTodos] = useLocalStorage(TODOS_STORAGE_KEY, INITIAL_TODOS);
+  const [filter, setFilter] = useLocalStorage(FILTER_STORAGE_KEY, "all");
 
   function handleAddTodo(text) {
     const newTodo = {
@@ -54,6 +49,11 @@ export default function App() {
   const visibleTodos = filterTodos(todos, filter);
   const activeCount = todos.filter((todo) => !todo.completed).length;
   const completedCount = todos.length - activeCount;
+
+  useEffect(() => {
+    document.title =
+      activeCount > 0 ? `(${activeCount}) To-Do List` : "To-Do List";
+  }, [activeCount]);
 
   return (
     <div className="app">
